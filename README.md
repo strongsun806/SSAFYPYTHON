@@ -43,18 +43,6 @@ cd SSAFYPYTHON
 
 
 
-### 3단계: 브랜치(Branch) 생성하기
-
-작업할 때마다 원본과 충돌을 막기 위해 내 이름이나 기능별로 브랜치를 만들어 작업합니다.
-
-* 터미널에 아래 명령어를 입력해 새 브랜치를 만들고 이동합니다:
-```bash
-git checkout -b feature/honggildong
-
-```
-
-
-
 ### 4단계: 폴더 생성 및 소스코드 업로드하기
 
 1. 프로젝트 폴더 내에 본인의 **이름** 혹은 **GitHub ID**로 된 폴더를 생성합니다. *(주의: 폴더명에 콜론 `:` 은 절대 사용하지 마세요!)*
@@ -77,10 +65,9 @@ git commit -m "[1주차] Hello World / D1 / 1분" -m "[https://swexpertacademy.c
 ```
 
 
-3. 원격 내 저장소로 푸시합니다:
+3. 원격 내 저장소로 푸시합니다: 본인이 포크 한 거기 때문에 본인 main 브랜치에 push 해도 됨!
 ```bash
-git push origin feature/honggildong
-
+git push origin main
 ```
 
 
@@ -88,10 +75,10 @@ git push origin feature/honggildong
 ### 6단계: 풀 리퀘스트(Pull Request, PR) 보내기
 
 1. 내 GitHub 저장소 페이지에 접속하면 **[Compare & pull request]** 버튼이 활성화되어 있습니다.
-2. 버튼을 누르고, 원본 저장소로 PR을 요청합니다.
+2. 버튼을 누르고, 원본 저장소로 PR을 요청합니다. (꼭 본인의 브랜치에다가 풀 리퀘스트 해주세요)
 3. 다른 사람들의 PR을 보고 자유롭게 코드 리뷰를 남깁니다.
 
-## 📌 commit 규칙
+## 📌 commit 규칙 - 안 지켜도 되는데 알아보기 쉽게만 하면 좋을 것 같아요
 
 * **Commit 메시지:** `[n주차] 문제이름 / 난이도 / 걸린시간` (시간은 기재하지 않아도 OK)
 * **Description:** 문제 주소 (option)
