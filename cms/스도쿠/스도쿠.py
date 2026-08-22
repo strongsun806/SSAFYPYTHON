@@ -27,6 +27,7 @@ def _3x3(data) :
                     box.append(data[k][l])
             new_list.append(box)
     return new_list
+
 case_num = 0        
 for test_case in range(1, T + 1):
     group =[]
