@@ -1,0 +1,35 @@
+# ==========================================
+# 1. Local Test Files (로컬 테스트용 입력 파일)
+# ==========================================
+input.txt
+output.txt
+*.in
+*.out
+
+# ==========================================
+# 2. Python Cache & Virtual Environment
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# ==========================================
+# 3. IDE & Editor Files (에디터 설정 파일)
+# ==========================================
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+
+# PyCharm / JetBrains
+.idea/
+
+# macOS System Files
+.DS_Store
+
+# Windows System Files
+Thumbs.db
+desktop.ini
