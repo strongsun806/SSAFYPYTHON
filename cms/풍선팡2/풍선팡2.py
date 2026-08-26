@@ -10,7 +10,6 @@ for test_case in range(1, T + 1):
     board = []
     for i in range(row):
         board.append(list(map(int,input().split())))
-
     # 최댓값 result 초기화
     result = 0
 
