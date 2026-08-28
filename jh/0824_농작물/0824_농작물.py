@@ -39,50 +39,33 @@ sys.stdin = open("input.txt", "r")
 T = int(input())
 # 여러개의 테스트 케이스가 주어지므로, 각각을 처리합니다.
 for test_case in range(1, T + 1):
-    matrix = []
-    for i in range(9):
-        row = []
-        for j in input().split():
-            row.append(j)
-        matrix.append(row)
+    # ///////////////////////////////////////////////////////////////////////////////////
+    '''
 
-    check_set_square = set()
+        이 부분에 여러분의 알고리즘 구현이 들어갑니다.
 
-    # 3x3 박스 검증
-    is_it_correct = 0
-    for n in range(3):
-        for m in range(3):
-            for 행 in range(9):
-                for 열 in range(9):
-                    if (행 // 3 == m) and (열 // 3 == n):
-                        check_set_square.add(int(matrix[행][열]))
-            if check_set_square == {1, 2, 3, 4, 5, 6, 7, 8, 9}:
-                is_it_correct += 1
-
-    # 행 검증
-    for k in range(9):
-        check_set_row = set()
-        for 행 in range(9):
-            if 행 == k:
-                for 열 in range(9):
-                    check_set_row.add(int(matrix[행][열]))
-                    
-        if check_set_row == {1, 2, 3, 4, 5, 6, 7, 8, 9}:
-            is_it_correct += 1
-
-    # 열 검증
-    for k in range(9):
-        check_set_column = set()
-        for 열 in range(9):
-            if 열 == k:
-                for 행 in range(9):
-                    check_set_column.add(int(matrix[행][열]))
-                    
-        if check_set_column == {1, 2, 3, 4, 5, 6, 7, 8, 9}:
-            is_it_correct += 1
-
-    if is_it_correct == 27:
-        print(f'#{test_case} 1')
-    else:
-        print(f'#{test_case} 0')
-
+    '''
+    # ///////////////////////////////////////////////////////////////////////////////////
+    # N*N 박스 생성
+    N = int(input())
+    box = [list(map(int, input())) for _ in range(N)]
+    # 마름모 탐색
+    item = []
+    # 위 피라미드 
+    a = 1
+    for i in range(N):
+        for j in range(a):
+            item.append(box[i][N//2-a//2+j])
+        if a == N:
+            break
+        a +=2
+    # 아래 피라미드
+    a = N-2
+    for i in range(N//2+1, N):
+        for j in range(a):
+            item.append(box[i][N//2-a//2+j])
+        a -=2
+    # 합 계산
+    cnt = sum(item)
+    # 출력
+    print(f'#{test_case} {cnt}')

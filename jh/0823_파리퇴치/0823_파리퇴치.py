@@ -35,54 +35,33 @@ print(f)                                문자열 1개 출력하는 예제
 '''
 import sys
 sys.stdin = open("input.txt", "r")
-
+from pprint import pprint as print
 T = int(input())
 # 여러개의 테스트 케이스가 주어지므로, 각각을 처리합니다.
 for test_case in range(1, T + 1):
-    matrix = []
-    for i in range(9):
-        row = []
-        for j in input().split():
-            row.append(j)
-        matrix.append(row)
+    # ///////////////////////////////////////////////////////////////////////////////////
+    '''
 
-    check_set_square = set()
+        이 부분에 여러분의 알고리즘 구현이 들어갑니다.
 
-    # 3x3 박스 검증
-    is_it_correct = 0
-    for n in range(3):
-        for m in range(3):
-            for 행 in range(9):
-                for 열 in range(9):
-                    if (행 // 3 == m) and (열 // 3 == n):
-                        check_set_square.add(int(matrix[행][열]))
-            if check_set_square == {1, 2, 3, 4, 5, 6, 7, 8, 9}:
-                is_it_correct += 1
-
-    # 행 검증
-    for k in range(9):
-        check_set_row = set()
-        for 행 in range(9):
-            if 행 == k:
-                for 열 in range(9):
-                    check_set_row.add(int(matrix[행][열]))
-                    
-        if check_set_row == {1, 2, 3, 4, 5, 6, 7, 8, 9}:
-            is_it_correct += 1
-
-    # 열 검증
-    for k in range(9):
-        check_set_column = set()
-        for 열 in range(9):
-            if 열 == k:
-                for 행 in range(9):
-                    check_set_column.add(int(matrix[행][열]))
-                    
-        if check_set_column == {1, 2, 3, 4, 5, 6, 7, 8, 9}:
-            is_it_correct += 1
-
-    if is_it_correct == 27:
-        print(f'#{test_case} 1')
-    else:
-        print(f'#{test_case} 0')
-
+    '''
+    # ///////////////////////////////////////////////////////////////////////////////////
+    # 박스크기N, 파리채 크기M
+    N, M = map(int, input().split())
+    # N*N box 만들기
+    box = [list(map(int, input().split())) for _ in range(N)]
+    # 최대값 변수 생성
+    max_cnt = 0
+    # 탐색 시작 지점 정하기
+    for i in range(N-M+1):
+        for j in range(N-M+1):
+            cnt =0
+    # 탐색 시작지점에서 M*M크기의 파리채 탐색 
+            for k in range(M):
+                for l in range(M):
+                    cnt += box[i+k][j+l]
+    # 최대값 비교
+            if cnt > max_cnt:
+                max_cnt = cnt
+    # 출력
+    print(f'#{test_case} {max_cnt}')

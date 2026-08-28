@@ -1,3 +1,4 @@
+# D2 백만 장자 프로젝트
 # 기본 제공코드는 임의 수정해도 관계 없습니다. 단, 입출력 포맷 주의
 # 아래 표준 입출력 예제 필요시 참고하세요.
 
@@ -33,56 +34,35 @@ print(f)                                문자열 1개 출력하는 예제
 아래 구문을 사용하기 위해서는 import sys가 필요합니다.
 단, 채점을 위해 코드를 제출하실 때에는 반드시 아래 구문을 지우거나 주석 처리 하셔야 합니다.
 '''
-import sys
-sys.stdin = open("input.txt", "r")
+#import sys
+#sys.stdin = open("input.txt", "r")
 
+# 테스트 케이스 개수 T 입력받기
 T = int(input())
-# 여러개의 테스트 케이스가 주어지므로, 각각을 처리합니다.
+
+# T번만큼 반복하기
 for test_case in range(1, T + 1):
-    matrix = []
-    for i in range(9):
-        row = []
-        for j in input().split():
-            row.append(j)
-        matrix.append(row)
-
-    check_set_square = set()
-
-    # 3x3 박스 검증
-    is_it_correct = 0
-    for n in range(3):
-        for m in range(3):
-            for 행 in range(9):
-                for 열 in range(9):
-                    if (행 // 3 == m) and (열 // 3 == n):
-                        check_set_square.add(int(matrix[행][열]))
-            if check_set_square == {1, 2, 3, 4, 5, 6, 7, 8, 9}:
-                is_it_correct += 1
-
-    # 행 검증
-    for k in range(9):
-        check_set_row = set()
-        for 행 in range(9):
-            if 행 == k:
-                for 열 in range(9):
-                    check_set_row.add(int(matrix[행][열]))
-                    
-        if check_set_row == {1, 2, 3, 4, 5, 6, 7, 8, 9}:
-            is_it_correct += 1
-
-    # 열 검증
-    for k in range(9):
-        check_set_column = set()
-        for 열 in range(9):
-            if 열 == k:
-                for 행 in range(9):
-                    check_set_column.add(int(matrix[행][열]))
-                    
-        if check_set_column == {1, 2, 3, 4, 5, 6, 7, 8, 9}:
-            is_it_correct += 1
-
-    if is_it_correct == 27:
-        print(f'#{test_case} 1')
-    else:
-        print(f'#{test_case} 0')
-
+    # 날짜 수 N 입력받기
+    N = int(input())
+    
+    # 각 날의 매매가를 리스트로 입력받기
+    prices = list(map(int, input().split()))
+    
+    max_profit = 0  # 총 이익을 저장할 변수
+    max_price = 0   # 지금까지의 최대 판매가
+    
+    # 앞에서부터 생각하면 어려우니까
+    # 가장 마지막 날인 젤 뒤부터 거꾸로 확인하도록 함수 짰어용
+    for i in range(N - 1, -1, -1):
+        price = prices[i]
+        
+        # 만약 오늘 가격이 젤 비싼 가격보다 크면
+        if price > max_price:
+            max_price = price  # 최고가를 오늘 가격으로 
+        else:
+            # 아니면
+            # 오늘 사서 제일 비싼 날(max_price)에 팔면 댐
+            max_profit += (max_price - price)
+            
+    # 정답 출력하기
+    print(f"#{test_case} {max_profit}")

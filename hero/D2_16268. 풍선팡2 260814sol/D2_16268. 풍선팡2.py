@@ -1,5 +1,5 @@
 import sys
-sys.stdin = open("D2_16268. 풍선팡2/input1.txt", "r")
+sys.stdin = open("D2_16268. 풍선팡2 260814sol/input1.txt", "r")
 
 T = int(input())
 for test_case in range(1, T + 1):
