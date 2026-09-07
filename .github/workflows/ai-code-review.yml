@@ -49,20 +49,24 @@ jobs:
       - name: GPT Code Review
         if: steps.get_diff.outputs.DIFF_EXISTS == 'true'
         run: |
-          DIFF_CONTENT=$(cat pr_diff.txt | jq -sR .)
-          
+          jq -n --rawfile diff pr_diff.txt '{
+            model: "gpt-4o-mini",
+            messages: [
+              {role: "system", content: "당신은 꼼꼼한 코드 리뷰어입니다. 전달된 전체 디프(diff)를 보고 한국어로 친절하고 상세하게 리뷰해 주세요."},
+              {role: "user", content: $diff}
+            ]
+          }' > payload.json
+
           RESPONSE=$(curl -s https://api.openai.com/v1/chat/completions \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
-            -d "{
-              \"model\": \"gpt-4o-mini\",
-              \"messages\": [
-                {\"role\": \"system\", \"content\": \"당신은 꼼꼼한 코드 리뷰어입니다. 변경된 디프(diff)를 보고 한국어로 친절하게 리뷰해 주세요.\"},
-                {\"role\": \"user\", \"content\": $DIFF_CONTENT}
-              ]
-            }")
+            -d @payload.json)
 
-          COMMENT_BODY=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
+          COMMENT_BODY=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // empty')
+
+          if [ -z "$COMMENT_BODY" ] || [ "$COMMENT_BODY" == "null" ]; then
+            COMMENT_BODY="⚠️ GPT 코드 리뷰 생성 실패 (응답을 불러오지 못했습니다)."
+          fi
 
           gh pr comment "$PR_NUMBER" --body "$COMMENT_BODY"
         env:
