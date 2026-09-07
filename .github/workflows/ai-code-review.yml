@@ -15,19 +15,16 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: AI PR Reviewer
-        uses: coderabbitai/ai-pr-reviewer@v1
-        with:
-          debug: false
-          review_comment_lgtm: false
-          openai_heavy_model: "gpt-4o"
-          openai_light_model: "gpt-4o-mini"
+      - name: ChatGPT Code Reviewer
+        uses: anc95/ChatGPT-Action@v1.4.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: "gpt-4o-mini" # 비용 절감을 위해 mini 사용 (필요시 gpt-4o 변경)
+          PROMPT: "코드 리뷰를 한국어로 친절하고 꼼꼼하게 작성해 주세요."
 
       - name: Auto-merge PR
         run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }} # 앞서 만든 PAT_TOKEN 사용
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
