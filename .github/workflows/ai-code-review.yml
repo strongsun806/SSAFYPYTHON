@@ -15,11 +15,35 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: ChatGPT Code Review
-        uses: anc95/ChatGPT-Action@main
+      - name: Get PR Diff
+        id: get_diff
+        run: |
+          gh pr diff "${{ github.event.pull_request.number }}" > pr_diff.txt
+          echo "DIFF_EXISTS=$(if [ -s pr_diff.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: GPT Code Review
+        if: steps.get_diff.outputs.DIFF_EXISTS == 'true'
+        run: |
+          DIFF_CONTENT=$(cat pr_diff.txt | jq -sR .)
+          
+          RESPONSE=$(curl -s https://api.openai.com/v1/chat/completions \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
+            -d "{
+              \"model\": \"gpt-4o-mini\",
+              \"messages\": [
+                {\"role\": \"system\", \"content\": \"당신은 꼼꼼한 코드 리뷰어입니다. 변경된 디프(diff)를 보고 한국어로 친절하게 리뷰해 주세요.\"},
+                {\"role\": \"user\", \"content\": $DIFF_CONTENT}
+              ]
+            }")
+
+          COMMENT_BODY=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
+
+          gh pr comment "${{ github.event.pull_request.number }}" --body "$COMMENT_BODY"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Auto-merge PR
         run: gh pr merge --auto --squash "$PR_URL"
