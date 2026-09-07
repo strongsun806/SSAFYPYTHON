@@ -1,6 +1,6 @@
 # 기본 제공코드는 임의 수정해도 관계 없습니다. 단, 입출력 포맷 주의
 # 아래 표준 입출력 예제 필요시 참고하세요.
-
+ 
 # 표준 입력 예제
 '''
 a = int(input())                        정수형 변수 1개 입력 받는 예제
@@ -9,7 +9,7 @@ d = float(input())                      실수형 변수 1개 입력 받는 예�
 e, f, g = map(float, input().split())   실수형 변수 3개 입력 받는 예제
 h = input()                             문자열 변수 1개 입력 받는 예제
 '''
-
+ 
 # 표준 출력 예제
 '''
 a, b = 6, 3
@@ -20,10 +20,10 @@ print(b, end = " ")                     줄바꿈 하지 않고 정수형 변수
 print(c, d, e)                          실수형 변수 3개 출력하는 예제
 print(f)                                문자열 1개 출력하는 예제
 '''
-
-
-
-
+ 
+ 
+ 
+ 
 '''
 아래의 구문은 input.txt 를 read only 형식으로 연 후,
 앞으로 표준 입력(키보드) 대신 input.txt 파일로부터 읽어오겠다는 의미의 코드입니다.
@@ -35,14 +35,43 @@ print(f)                                문자열 1개 출력하는 예제
 '''
 #import sys
 #sys.stdin = open("input.txt", "r")
-
+ 
 T = int(input())
 # 여러개의 테스트 케이스가 주어지므로, 각각을 처리합니다.
 for test_case in range(1, T + 1):
     # ///////////////////////////////////////////////////////////////////////////////////
     '''
-
+ 
         이 부분에 여러분의 알고리즘 구현이 들어갑니다.
-
+ 
     '''
     # ///////////////////////////////////////////////////////////////////////////////////
+    N, M= map(int, input().split())
+    main_lst = []
+    for i in range(N):
+        main_lst.append(list(map(int, input().split())))
+    max_sum = 0
+    for i in range(N):
+        for j in range(M):
+            cnt_lst = []
+            cnt_lst.append(main_lst[i][j])
+            if i-1 <0:
+                pass
+            else:
+                cnt_lst.append(main_lst[i-1][j])
+            if i+2 > N:
+                pass
+            else:
+                cnt_lst.append(main_lst[i+1][j])
+            if j-1 <0:
+                pass
+            else:
+                cnt_lst.append(main_lst[i][j-1])
+            if j+2 > M:
+                pass
+            else:
+                cnt_lst.append(main_lst[i][j+1])
+            sum_lst = sum(cnt_lst)
+            if sum_lst > max_sum:
+                max_sum = sum_lst
+    print(f'#{test_case} {max_sum}')

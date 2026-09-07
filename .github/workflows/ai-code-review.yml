@@ -1,11 +1,12 @@
-name: Automated GPT Code Review & Auto Merge
+name: Automated GPT Code Review & Auto Merge on Push
 
 on:
-  pull_request:
-    types: [opened, synchronize]
+  push:
+    branches-ignore:
+      - main
 
 jobs:
-  review-and-merge:
+  auto-pr-review-merge:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -14,11 +15,33 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create Pull Request automatically
+        id: cpr
+        run: |
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          
+          PR_URL=$(gh pr list --head "$BRANCH_NAME" --base main --json url --jq '.[0].url')
+          
+          if [ -z "$PR_URL" ]; then
+            PR_URL=$(gh pr create --title "auto: merge $BRANCH_NAME to main" \
+                                 --body "Automated PR triggered by push on $BRANCH_NAME" \
+                                 --base main \
+                                 --head "$BRANCH_NAME")
+          fi
+          
+          echo "PR_URL=$PR_URL" >> $GITHUB_ENV
+          PR_NUMBER=$(echo "$PR_URL" | awk -F'/' '{print $NF}')
+          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
 
       - name: Get PR Diff
         id: get_diff
         run: |
-          gh pr diff "${{ github.event.pull_request.number }}" > pr_diff.txt
+          gh pr diff "$PR_NUMBER" > pr_diff.txt
           echo "DIFF_EXISTS=$(if [ -s pr_diff.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -41,12 +64,12 @@ jobs:
 
           COMMENT_BODY=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
 
-          gh pr comment "${{ github.event.pull_request.number }}" --body "$COMMENT_BODY"
+          gh pr comment "$PR_NUMBER" --body "$COMMENT_BODY"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Auto-merge PR
         run: gh pr merge --squash --admin "$PR_URL"
         env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_URL: ${{ env.PR_URL }}
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
