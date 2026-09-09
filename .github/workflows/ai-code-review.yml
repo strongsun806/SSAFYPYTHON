@@ -23,23 +23,45 @@ jobs:
         run: |
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
           
-          PR_URL=$(gh pr list --head "$BRANCH_NAME" --base main --json url --jq '.[0].url')
+          # 1. main과 현재 브랜치 간 새로운 커밋 차이가 있는지 확인
+          COMMITS_AHEAD=$(git rev-list --count origin/main..HEAD 2>/dev/null || echo "0")
           
-          if [ -z "$PR_URL" ]; then
-            PR_URL=$(gh pr create --title "auto: merge $BRANCH_NAME to main" \
-                                 --body "Automated PR triggered by push on $BRANCH_NAME" \
-                                 --base main \
-                                 --head "$BRANCH_NAME")
+          # 2. 이미 열려있는 PR이 있는지 확인
+          PR_URL=$(gh pr list --head "$BRANCH_NAME" --base main --state open --json url --jq '.[0].url')
+          
+          # 3. 열린 PR도 없고 새 커밋도 없다면 에러 없이 작업 스킵
+          if [ -z "$PR_URL" ] && [ "$COMMITS_AHEAD" -eq 0 ]; then
+            echo "ℹ️ main과 $BRANCH_NAME 사이에 새로운 커밋이 없습니다. 작업을 종료합니다."
+            echo "SKIP=true" >> $GITHUB_OUTPUT
+            exit 0
           fi
-          
+
+          # 4. PR이 없는 경우 생성 시도
+          if [ -z "$PR_URL" ]; then
+            CREATE_OUTPUT=$(gh pr create --title "auto: merge $BRANCH_NAME to main" \
+                                         --body "Automated PR triggered by push on $BRANCH_NAME" \
+                                         --base main \
+                                         --head "$BRANCH_NAME" 2>&1) || true
+            
+            if echo "$CREATE_OUTPUT" | grep -q "No commits between"; then
+              echo "ℹ️ 머지할 커밋 차이가 없어 PR 생성을 스킵합니다."
+              echo "SKIP=true" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+
+            PR_URL=$(echo "$CREATE_OUTPUT" | grep -Eo 'https://github.com/[^ ]+/pull/[0-9]+')
+          fi
+
           echo "PR_URL=$PR_URL" >> $GITHUB_ENV
           PR_NUMBER=$(echo "$PR_URL" | awk -F'/' '{print $NF}')
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+          echo "SKIP=false" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
 
       - name: Get PR Diff
         id: get_diff
+        if: steps.cpr.outputs.SKIP != 'true'
         run: |
           gh pr diff "$PR_NUMBER" > pr_diff.txt
           echo "DIFF_EXISTS=$(if [ -s pr_diff.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
@@ -47,8 +69,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: GPT Code Review
-        if: steps.get_diff.outputs.DIFF_EXISTS == 'true'
+        if: steps.cpr.outputs.SKIP != 'true' && steps.get_diff.outputs.DIFF_EXISTS == 'true'
         run: |
+          # Diff 전체를 JSON 요청 파일(payload.json)로 생성하여 글자 수 제한 우회
           jq -n --rawfile diff pr_diff.txt '{
             model: "gpt-4o-mini",
             messages: [
@@ -73,6 +96,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Auto-merge PR
+        if: steps.cpr.outputs.SKIP != 'true'
         run: gh pr merge --squash --admin "$PR_URL"
         env:
           PR_URL: ${{ env.PR_URL }}
