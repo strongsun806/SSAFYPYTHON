@@ -63,7 +63,22 @@ jobs:
         id: get_diff
         if: steps.cpr.outputs.SKIP != 'true'
         run: |
-          gh pr diff "$PR_NUMBER" > pr_diff.txt
+          # 1. 테스트케이스(.txt) 등 불필요한 대용량 파일을 제외하고 오직 .py 파일의 diff만 추출
+          gh pr diff "$PR_NUMBER" -- "*.py" > pr_diff.txt
+
+          # 만약 .py 변경사항이 없으면 전체 diff 조회
+          if [ ! -s pr_diff.txt ]; then
+            gh pr diff "$PR_NUMBER" > pr_diff.txt
+          fi
+
+          # 2. 토큰 한도 초과(실패) 방지를 위해 Diff가 35,000자 초과 시 상위 35,000자만 보존
+          MAX_CHARS=35000
+          if [ $(wc -c < pr_diff.txt) -gt $MAX_CHARS ]; then
+            head -c $MAX_CHARS pr_diff.txt > pr_diff_trimmed.txt
+            echo -e "\n\n... (Diff가 너무 방대하여 초과분은 생략되었습니다.)" >> pr_diff_trimmed.txt
+            mv pr_diff_trimmed.txt pr_diff.txt
+          fi
+
           echo "DIFF_EXISTS=$(if [ -s pr_diff.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -71,11 +86,10 @@ jobs:
       - name: GPT Code Review
         if: steps.cpr.outputs.SKIP != 'true' && steps.get_diff.outputs.DIFF_EXISTS == 'true'
         run: |
-          # Diff 전체를 JSON 요청 파일(payload.json)로 생성하여 글자 수 제한 우회
           jq -n --rawfile diff pr_diff.txt '{
             model: "gpt-4o-mini",
             messages: [
-              {role: "system", content: "당신은 꼼꼼한 코드 리뷰어입니다. 전달된 전체 디프(diff)를 보고 한국어로 친절하고 상세하게 리뷰해 주세요."},
+              {role: "system", content: "당신은 알고리즘 코드 리뷰어입니다. 전달된 Python diff를 분석하여 시간복잡도, 공간복잡도, 가독성 및 개선점에 대해 마크다운 포맷으로 친절히 리뷰해 주세요."},
               {role: "user", content: $diff}
             ]
           }' > payload.json
@@ -87,8 +101,10 @@ jobs:
 
           COMMENT_BODY=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // empty')
 
+          # API 호출 실패 시 에러 사유를 코멘트에 노출하여 원인 추적 가능하게 처리
           if [ -z "$COMMENT_BODY" ] || [ "$COMMENT_BODY" == "null" ]; then
-            COMMENT_BODY="⚠️ GPT 코드 리뷰 생성 실패 (응답을 불러오지 못했습니다)."
+            ERROR_MSG=$(echo "$RESPONSE" | jq -r '.error.message // "원인을 알 수 없는 오류"')
+            COMMENT_BODY="⚠️ GPT 코드 리뷰 생성 실패: $ERROR_MSG"
           fi
 
           gh pr comment "$PR_NUMBER" --body "$COMMENT_BODY"
