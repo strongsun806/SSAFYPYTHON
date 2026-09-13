@@ -63,15 +63,22 @@ jobs:
         id: get_diff
         if: steps.cpr.outputs.SKIP != 'true'
         run: |
-          # 1. 테스트케이스(.txt) 등 불필요한 대용량 파일을 제외하고 오직 .py 파일의 diff만 추출
-          gh pr diff "$PR_NUMBER" -- "*.py" > pr_diff.txt
+          # 1. 전체 diff 추출 (gh pr diff는 파일 필터링 인자를 지원하지 않으므로 단독 호출)
+          gh pr diff "$PR_NUMBER" > raw_diff.txt
 
-          # 만약 .py 변경사항이 없으면 전체 diff 조회
-          if [ ! -s pr_diff.txt ]; then
-            gh pr diff "$PR_NUMBER" > pr_diff.txt
-          fi
+          # 2. .txt 등 대용량 파일을 제외하고 .py 관련 diff 블록만 필터링 (없으면 전체 diff 사용)
+          python3 -c '
+          import re
+          with open("raw_diff.txt") as f:
+              content = f.read()
+          blocks = re.split(r"(?=diff --git )", content)
+          py_blocks = [b for b in blocks if re.search(r"diff --git a/.*\.py b/", b)]
+          res = "".join(py_blocks) if py_blocks else content
+          with open("pr_diff.txt", "w") as f:
+              f.write(res)
+          '
 
-          # 2. 토큰 한도 초과(실패) 방지를 위해 Diff가 35,000자 초과 시 상위 35,000자만 보존
+          # 3. 토큰 한도 초과(실패) 방지를 위해 Diff가 35,000자 초과 시 상위 35,000자만 보존
           MAX_CHARS=35000
           if [ $(wc -c < pr_diff.txt) -gt $MAX_CHARS ]; then
             head -c $MAX_CHARS pr_diff.txt > pr_diff_trimmed.txt
