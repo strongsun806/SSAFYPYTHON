@@ -23,52 +23,96 @@ jobs:
         run: |
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
           
-          PR_URL=$(gh pr list --head "$BRANCH_NAME" --base main --json url --jq '.[0].url')
+          # 1. main과 현재 브랜치 간 새로운 커밋 차이가 있는지 확인
+          COMMITS_AHEAD=$(git rev-list --count origin/main..HEAD 2>/dev/null || echo "0")
           
-          if [ -z "$PR_URL" ]; then
-            PR_URL=$(gh pr create --title "auto: merge $BRANCH_NAME to main" \
-                                 --body "Automated PR triggered by push on $BRANCH_NAME" \
-                                 --base main \
-                                 --head "$BRANCH_NAME")
+          # 2. 이미 열려있는 PR이 있는지 확인
+          PR_URL=$(gh pr list --head "$BRANCH_NAME" --base main --state open --json url --jq '.[0].url')
+          
+          # 3. 열린 PR도 없고 새 커밋도 없다면 에러 없이 작업 스킵
+          if [ -z "$PR_URL" ] && [ "$COMMITS_AHEAD" -eq 0 ]; then
+            echo "ℹ️ main과 $BRANCH_NAME 사이에 새로운 커밋이 없습니다. 작업을 종료합니다."
+            echo "SKIP=true" >> $GITHUB_OUTPUT
+            exit 0
           fi
-          
+
+          # 4. PR이 없는 경우 생성 시도
+          if [ -z "$PR_URL" ]; then
+            CREATE_OUTPUT=$(gh pr create --title "auto: merge $BRANCH_NAME to main" \
+                                         --body "Automated PR triggered by push on $BRANCH_NAME" \
+                                         --base main \
+                                         --head "$BRANCH_NAME" 2>&1) || true
+            
+            if echo "$CREATE_OUTPUT" | grep -q "No commits between"; then
+              echo "ℹ️ 머지할 커밋 차이가 없어 PR 생성을 스킵합니다."
+              echo "SKIP=true" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+
+            PR_URL=$(echo "$CREATE_OUTPUT" | grep -Eo 'https://github.com/[^ ]+/pull/[0-9]+')
+          fi
+
           echo "PR_URL=$PR_URL" >> $GITHUB_ENV
           PR_NUMBER=$(echo "$PR_URL" | awk -F'/' '{print $NF}')
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+          echo "SKIP=false" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
 
       - name: Get PR Diff
         id: get_diff
+        if: steps.cpr.outputs.SKIP != 'true'
         run: |
-          gh pr diff "$PR_NUMBER" > pr_diff.txt
+          # 1. 테스트케이스(.txt) 등 불필요한 대용량 파일을 제외하고 오직 .py 파일의 diff만 추출
+          gh pr diff "$PR_NUMBER" -- "*.py" > pr_diff.txt
+
+          # 만약 .py 변경사항이 없으면 전체 diff 조회
+          if [ ! -s pr_diff.txt ]; then
+            gh pr diff "$PR_NUMBER" > pr_diff.txt
+          fi
+
+          # 2. 토큰 한도 초과(실패) 방지를 위해 Diff가 35,000자 초과 시 상위 35,000자만 보존
+          MAX_CHARS=35000
+          if [ $(wc -c < pr_diff.txt) -gt $MAX_CHARS ]; then
+            head -c $MAX_CHARS pr_diff.txt > pr_diff_trimmed.txt
+            echo -e "\n\n... (Diff가 너무 방대하여 초과분은 생략되었습니다.)" >> pr_diff_trimmed.txt
+            mv pr_diff_trimmed.txt pr_diff.txt
+          fi
+
           echo "DIFF_EXISTS=$(if [ -s pr_diff.txt ]; then echo 'true'; else echo 'false'; fi)" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: GPT Code Review
-        if: steps.get_diff.outputs.DIFF_EXISTS == 'true'
+        if: steps.cpr.outputs.SKIP != 'true' && steps.get_diff.outputs.DIFF_EXISTS == 'true'
         run: |
-          DIFF_CONTENT=$(cat pr_diff.txt | jq -sR .)
-          
+          jq -n --rawfile diff pr_diff.txt '{
+            model: "gpt-4o-mini",
+            messages: [
+              {role: "system", content: "당신은 알고리즘 코드 리뷰어입니다. 전달된 Python diff를 분석하여 시간복잡도, 공간복잡도, 가독성 및 개선점에 대해 마크다운 포맷으로 친절히 리뷰해 주세요."},
+              {role: "user", content: $diff}
+            ]
+          }' > payload.json
+
           RESPONSE=$(curl -s https://api.openai.com/v1/chat/completions \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
-            -d "{
-              \"model\": \"gpt-4o-mini\",
-              \"messages\": [
-                {\"role\": \"system\", \"content\": \"당신은 꼼꼼한 코드 리뷰어입니다. 변경된 디프(diff)를 보고 한국어로 친절하게 리뷰해 주세요.\"},
-                {\"role\": \"user\", \"content\": $DIFF_CONTENT}
-              ]
-            }")
+            -d @payload.json)
 
-          COMMENT_BODY=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
+          COMMENT_BODY=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // empty')
+
+          # API 호출 실패 시 에러 사유를 코멘트에 노출하여 원인 추적 가능하게 처리
+          if [ -z "$COMMENT_BODY" ] || [ "$COMMENT_BODY" == "null" ]; then
+            ERROR_MSG=$(echo "$RESPONSE" | jq -r '.error.message // "원인을 알 수 없는 오류"')
+            COMMENT_BODY="⚠️ GPT 코드 리뷰 생성 실패: $ERROR_MSG"
+          fi
 
           gh pr comment "$PR_NUMBER" --body "$COMMENT_BODY"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Auto-merge PR
+        if: steps.cpr.outputs.SKIP != 'true'
         run: gh pr merge --squash --admin "$PR_URL"
         env:
           PR_URL: ${{ env.PR_URL }}
