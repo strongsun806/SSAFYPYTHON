@@ -96,8 +96,14 @@ jobs:
           jq -n --rawfile diff pr_diff.txt '{
             model: "gpt-4o-mini",
             messages: [
-              {role: "system", content: "당신은 알고리즘 코드 리뷰어입니다. 전달된 Python diff를 분석하여 시간복잡도, 공간복잡도, 가독성 및 개선점에 대해 마크다운 포맷으로 친절히 리뷰해 주세요."},
-              {role: "user", content: $diff}
+              {
+                role: "system",
+                content: "당신은 SSAFY 알고리즘 코드 리뷰어입니다. 코드 내용과 무관하게 모든 피드백과 설명은 반드시 100% 한국어(Korean)로만 작성해야 합니다. 영어가 포함된 코드라도 분석과 코멘트는 한국어로 작성하세요. 마크다운 포맷을 사용하여 시간복잡도, 공간복잡도, 가독성, 개선 가능한 점을 명확하고 친절하게 정리해 주세요."
+              },
+              {
+                role: "user",
+                content: ("다음 Python diff 코드를 분석하고 반드시 한국어로 코드 리뷰를 작성해 주세요:\n\n" + $diff)
+              }
             ]
           }' > payload.json
 
