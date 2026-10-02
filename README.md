@@ -1,20 +1,22 @@
 
 # SSAFYPYTHON
 
-SSAFY 16기 알고리즘 스터디
+SSAFY 16기 알고리즘 자율 스터디 
 
 ## 📌 스터디 소개
-- 코딩 테스트 준비를 위한 SSAFY 16기 소그룹 알고리즘 스터디입니다.
-- 파이썬 D1, D2 수준의 SWEA(Samsung SW Expert Academy) 문제 풀이를 진행합니다.
+- 혼자 코딩 테스트를 준비하기 막막한 동기들과 함께하는 **자율형 소그룹 알고리즘 스터디**입니다.
+- 각자 본인 깃허브에 레포지토리를 포크(Fork)하여 기록을 남기고, 서로 풀이를 공유하며 함께 성장하는 목표를 가집니다.
+- 파이썬 **D2 ~ D4 수준**의 SWEA(Samsung SW Expert Academy) 문제 풀이를 진행합니다.
 
 <br>
 
 ## 📌 스터디 일정 및 규칙
-- **시작일:** 2026년 8월 4일부터 시작합니다.
-- **진행 방식:** 일주일에 2문제를 선정하여 풀이합니다.
-- 매일 1개씩 문제를 풀이하고, 풀이 완료 시마다 `Pull Requests`를 진행합니다.
-- 문제 풀이 불가 시 `Issues`란에 어려움을 겪는 부분을 질의합니다.
-- `Pull Requests`, `Issues`란을 매일 확인하고 피드백을 진행합니다.
+- **시작일:** 2026년 8월 4일부터 진행 중이며, **새로운 멤버는 언제든 환영**합니다!
+- **진행 방식:** 
+  - 각자 스케줄에 맞춰 정해진 주기에 따라 문제를 풀이합니다.
+  - 풀이 완료 시 원본 저장소로 `Pull Requests`를 진행합니다.
+  - 문제 풀이 중 어려움을 겪을 시 `Issues`란에 자유롭게 질의하고 의견을 나눕니다.
+  - 서로의 `Pull Requests`와 `Issues`를 확인하며 따뜻하고 적극적인 피드백을 주고받습니다.
 
 <br>
 
@@ -33,7 +35,7 @@ SSAFY 16기 알고리즘 스터디
    ```bash
    git clone 복사한주소
 
-
+```
 
 4. 다운로드된 폴더로 이동합니다:
 ```bash
@@ -43,13 +45,13 @@ cd SSAFYPYTHON
 
 
 
-### 4단계: 폴더 생성 및 소스코드 업로드하기
+### 3단계: 폴더 생성 및 소스코드 업로드하기
 
 1. 프로젝트 폴더 내에 본인의 **이름** 혹은 **GitHub ID**로 된 폴더를 생성합니다. *(주의: 폴더명에 콜론 `:` 은 절대 사용하지 마세요!)*
 2. 생성된 본인 폴더 내부에 자신의 파이썬 소스코드를 업로드(저장)합니다.
 3. 기존에 다른 사람이 만든 폴더나 파일은 절대 지우지 마세요! 본인 폴더 내부만 수정해야 합니다.
 
-### 5단계: 깃(Git) 명령어 입력 및 푸시(Push)하기
+### 4단계: 깃(Git) 명령어 입력 및 푸시(Push)하기
 
 1. 작업한 내용을 스테이징합니다:
 ```bash
@@ -60,31 +62,32 @@ git add .
 
 2. 커밋 규칙에 맞춰 메시지를 작성하고 커밋합니다:
 ```bash
-git commit -m "[1주차] Hello World / D1 / 1분" -m "[https://swexpertacademy.com/main/code/problem/problemList.do](https://swexpertacademy.com/main/code/problem/problemList.do)"
+git commit -m "[1주차] 문제이름 / D2 / 10분" -m "[https://swexpertacademy.com/main/code/problem/problemDetail.do?problemId=](https://swexpertacademy.com/main/code/problem/problemDetail.do?problemId=)..."
 
 ```
 
 
-3. 원격 내 저장소로 푸시합니다: 본인이 포크 한 거기 때문에 본인 main 브랜치에 push 해도 됨!
+3. 원격 내 저장소로 푸시합니다: (본인이 포크한 저장소이므로 본인 main 브랜치에 push 해도 OK!)
 ```bash
 git push origin main
+
 ```
 
 
 
-### 6단계: 풀 리퀘스트(Pull Request, PR) 보내기
+### 5단계: 풀 리퀘스트(Pull Request, PR) 보내기
 
 1. 내 GitHub 저장소 페이지에 접속하면 **[Compare & pull request]** 버튼이 활성화되어 있습니다.
-2. 버튼을 누르고, 원본 저장소로 PR을 요청합니다. (꼭 본인의 브랜치에다가 풀 리퀘스트 해주세요)
+2. 버튼을 누르고, 원본 저장소로 PR을 요청합니다. (꼭 본인의 브랜치로 설정되어 있는지 확인해주세요!)
 3. 다른 사람들의 PR을 보고 자유롭게 코드 리뷰를 남깁니다.
 
-## 📌 commit 규칙 - 안 지켜도 되는데 알아보기 쉽게만 하면 좋을 것 같아요
+## 📌 Commit 규칙
 
-* **Commit 메시지:** `[n주차] 문제이름 / 난이도 / 걸린시간` (시간은 기재하지 않아도 OK)
+* **Commit 메시지 형식:** `[n주차] 문제이름 / 난이도 / 걸린시간` (시간은 기재하지 않아도 OK)
 * **Description:** 문제 주소 (option)
 * **터미널 작성법 예시:**
 ```bash
-git commit -m "[1주차] 부호와 수 / D1 / 3분" -m "[https://swexpertacademy.com/main/code/problem/problemDetail.do?problemId=](https://swexpertacademy.com/main/code/problem/problemDetail.do?problemId=)..."
+git commit -m "[1주차] 부호와 수 / D2 / 3분" -m "[https://swexpertacademy.com/main/code/problem/problemDetail.do?problemId=](https://swexpertacademy.com/main/code/problem/problemDetail.do?problemId=)..."
 
 ```
 
@@ -112,17 +115,18 @@ git commit -m "[1주차] 부호와 수 / D1 / 3분" -m "[https://swexpertacademy
 * Issue 및 Pull Request 공간에서 코드리뷰를 진행합니다.
 * 전체 코드 흐름을 파악한 뒤, 상대방이 어떻게 풀었는지 이해하고 의견을 제시합니다.
 * **리뷰 내용 예시:**
-* 잘했다고 생각하는 부분
-* 이렇게 하면 더 좋을 것 같다고 생각하는 부분
-* 왜 이렇게 풀었는지 궁금한 부분
-* 또 다른 풀이 방식 제시
+* 잘했다고 생각하는 부분 칭찬하기
+* 이렇게 하면 더 좋을 것 같다고 생각하는 부분 제안하기
+* 왜 이렇게 풀었는지 궁금한 점 질문하기
+* 또 다른 풀이 방식 공유하기
 
 
 * 댓글(Comment)로 따뜻하고 적극적인 피드백을 남겨주세요.
 
-## 📌 참여자와 진행도
+## 📌 참여 멤버 및 진행도
 
-* 추후 스터디원들의 명단과 진행 상황을 이 곳에 업데이트할 예정입니다.
+* 스터디에 참여하는 멤버들의 명단과 진행 상황이 이 곳에 업데이트됩니다.
+* (새로 합류하고 싶으신 분들은 언제든 편하게 말씀해 주세요!)
 
 ```
 
