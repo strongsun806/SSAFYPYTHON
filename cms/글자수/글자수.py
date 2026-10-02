@@ -13,4 +13,4 @@ for tc in range(1, T+1):
                 cnt += 1
         if cnt > ans:
             ans = cnt
-    print(f"{tc} {ans}")
+    print(f"#{tc} {ans}")
