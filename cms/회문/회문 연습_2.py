@@ -1,48 +1,36 @@
-# import sys
-# sys.stdin = open("sample_input.txt","r")
+target = "ABABCBADDC"
+N = len(target)
+M = 5
+# 길이 N인 문장에서 길이 M인 회문 찾기
+# 길이 M인 문장의 시작점 순회
+for i in range(N-M+1):
+    # i : 검사하려는 길이 M짜리 문장의 시작점
+    # 첫번째 문자랑 마지막 문자랑 비교
+    #  i번 <----> i+M-1
+    #  i + 1     i+M-1-1
+    for j in range(M//2):
+        if target[i+j] != target[i+M-1+j] : # 회문이 아님
+            break
 
-# T = int(input())
-
-# for tc in range(1, T+1):
-#     N, M = map(int, input().split())
-#     str_list = [list(input()) for _ in range(N)]
-#     ans = ""
-#     for i in range(N):
-#         for j in range(N-M+1):     
-#             word = str_list[i][j:j+M]
-#             if word == word[::-1]:
-#                 ans = "".join(word)
-#                 break
-
-#         for j in range(N):
-#             for r in range(N-M+1):
-#                 word_ex =[]
-
-#                 for i in range(r, r+M):    
-#                     word_ex.append(str_list[i][j])
-
-#                 if word_ex == word_ex[::-1]:
-#                     ans = "".join(word_ex)
-#                     break
-#             if ans :
-#                 break
-
-#     print(f"#{tc} {ans}")
-
-
-
-# 강사님 풀이
-
-# 전체 길이가 M인 문장으로 회문 검사하기
-target = 'ABCBA'
-M = len(target)
-# 앞쪽 인덱스와 뒤쪽 인덱스 비교
-# 절반만 비교
-for i in range(M//2):
-    if target[i]!=target[M-1-i]:
-        is_palin = False
-        print('회문이 아닙니다')
+    # 회문이 있으면 찾았다고 표시하고 끝내기
+    else : 
         break
-    
-else :  # for문이 도는 동안 break가 한 번도 실행이 안되면 수행되는 코드
-    print('회문입니다.')
+
+else :
+    print("회문 없음")
+
+for i in range(N-M+1):
+    is_find = True
+    for j in range(M//2):
+        if target[i+j] != target[i+M-1+j] : # 회문이 아님
+            is_find = False
+            break
+
+    if is_find == True:   # 회문 찾음
+        result = True
+if result:
+    print("회문 찾음")
+
+else :
+    print("회문 없음")
+
