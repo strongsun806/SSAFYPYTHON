@@ -6,7 +6,7 @@ output.txt
 *.in
 *.out
 *.png
-
+sample_input.txt
 # ==========================================
 # 2. Python Cache & Virtual Environment
 # ==========================================
