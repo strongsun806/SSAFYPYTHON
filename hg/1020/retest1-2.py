@@ -14,7 +14,7 @@ h_b = {
     "C" :"1100",
     "D" :"1101",
     "E" :"1110",
-    "F" :"1111"
+    "F" :"1111",
 }
 
 T = int(input())
@@ -24,5 +24,13 @@ for tc in range(1, T+1):
     
     for char in hex_str:
         ans += h_b[char]
-
+    
     print(f"#{tc} {ans}")
+    
+    # 1의 개수 세기
+    cnt = 0
+
+    for bit in ans:
+        if bit == '1':
+            cnt += 1
+    print(f'#{tc} {cnt}')
