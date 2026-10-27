@@ -11,5 +11,5 @@ for tc in range(1, T+1):
             bits = str(dec_num % 2) + bits
             dec_num //= 2
         result += bits
-
+    
     print(f'#{tc} {result}')
