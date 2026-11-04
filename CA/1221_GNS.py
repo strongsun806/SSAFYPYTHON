@@ -1,0 +1,23 @@
+# ========================================================
+# 문제: 1221_[S/W 문제해결 기본] 5일차 - GNS
+# 난이도: D3
+# 작성자: 윤형섭 (1627575)
+# 제출 결과: Pass
+# 저장 일시: 2026-10-07 11:40:45
+# ========================================================
+
+T = int(input())
+word_ls = ["ZRO", "ONE", "TWO", "THR", "FOR", "FIV", "SIX", "SVN", "EGT", "NIN"]
+ for tc in range(1, T + 1):
+    what = input().split()
+    listed_char = input().split()
+     result = [0] * 10
+      for item in listed_char:
+        for j in range(len(word_ls)):
+            if item == word_ls[j]:
+                result[j] += 1
+      sorted_ls = []
+    for j in range(len(word_ls)):
+        sorted_ls.extend([word_ls[j]] * result[j])
+     print(what[0])
+    print(*(sorted_ls))
