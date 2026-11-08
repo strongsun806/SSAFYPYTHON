@@ -1,0 +1,7 @@
+def solution(numbers, k):
+    last_k = 2*(k-1)
+    l = len(numbers)
+    idx = last_k % l
+                
+    answer = numbers[idx]
+    return answer
