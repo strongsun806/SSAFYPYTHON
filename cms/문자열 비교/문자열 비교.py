@@ -19,7 +19,7 @@ for tc in range(1, T+1):
     if search(p,t) == 1:
         ans = 1
 
-    print(f"{tc} {ans}")
+    print(f"#{tc} {ans}")
 
 
 
